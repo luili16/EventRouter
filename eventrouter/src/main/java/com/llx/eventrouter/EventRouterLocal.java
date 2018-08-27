@@ -76,6 +76,10 @@ class EventRouterLocal {
     }
 
     private static void checkParcelable(Class<?> aClass) {
+        // 基本类型不必实现parcelable
+        if (rawType(aClass)) {
+            return;
+        }
         Class<?>[] ifs = aClass.getInterfaces();
         if (ifs != null && ifs.length > 0) {
             for (Class<?> c : ifs) {
@@ -87,6 +91,37 @@ class EventRouterLocal {
         }
         // not implement
         throw new IllegalStateException("param must implement parcelable");
+    }
+
+    private static boolean rawType(Class<?> cls) {
+        if (cls.equals(void.class)) {
+            return true;
+        } else if (cls.equals(int.class)) {
+            return true;
+        } else if (cls.equals(long.class)) {
+            return true;
+        } else if (cls.equals(char.class)) {
+            return true;
+        } else if (cls.equals(byte.class)) {
+            return true;
+        } else if (cls.equals(Integer.class)) {
+            return true;
+        } else if (cls.equals(Long.class)) {
+            return true;
+        } else if (cls.equals(Byte.class)) {
+            return true;
+        } else if (cls.equals(int[].class)) {
+            return true;
+        } else if (cls.equals(long[].class)) {
+            return true;
+        } else if (cls.equals(char[].class)) {
+            return true;
+        } else //noinspection RedundantIfStatement
+            if (cls.equals(byte[].class)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private boolean isOriginalType(Class<?> eventType) {
@@ -179,5 +214,10 @@ class EventRouterLocal {
     void post(Object obj, String tag) {
         //noinspection ResultOfMethodCallIgnored
         post(obj, tag, void.class.getCanonicalName());
+    }
+
+    // for test
+    Map<Event, CopyOnWriteArrayList<Subscription>> getSubscribeMap() {
+        return mSubscribeMap;
     }
 }

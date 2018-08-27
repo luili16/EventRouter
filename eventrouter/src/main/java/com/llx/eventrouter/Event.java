@@ -2,6 +2,7 @@ package com.llx.eventrouter;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 /**
  * 代表一个订阅事件
@@ -9,13 +10,13 @@ import android.os.Parcelable;
  */
 public class Event implements Parcelable {
 
-    private String paramType;
+    private final String paramType;
 
-    private String tag;
+    private final String tag;
 
-    private String returnType;
+    private final String returnType;
 
-    public Event(String paramType, String tag, String returnType) {
+    public Event(@NonNull String paramType, @NonNull String tag, @NonNull String returnType) {
         this.paramType = paramType;
         this.tag = tag;
         this.returnType = returnType;
@@ -70,5 +71,25 @@ public class Event implements Parcelable {
         dest.writeString(paramType);
         dest.writeString(tag);
         dest.writeString(returnType);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Event event = (Event) o;
+
+        if (!paramType.equals(event.paramType)) return false;
+        if (!tag.equals(event.tag)) return false;
+        return returnType.equals(event.returnType);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = paramType.hashCode();
+        result = 31 * result + tag.hashCode();
+        result = 31 * result + returnType.hashCode();
+        return result;
     }
 }
