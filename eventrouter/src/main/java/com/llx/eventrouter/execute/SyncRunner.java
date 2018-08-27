@@ -11,9 +11,9 @@ class SyncRunner implements Runnable {
     private Object mObj;
 
     public SyncRunner(CountDownLatch doneSignal, Method method, Object paramObj, Object obj) {
-        this.mDoneSignal = mDoneSignal;
-        this.mMethod = mMethod;
-        this.mParamObj = mParamObj;
+        this.mDoneSignal = doneSignal;
+        this.mMethod = method;
+        this.mParamObj = paramObj;
         this.mObj = obj;
     }
 

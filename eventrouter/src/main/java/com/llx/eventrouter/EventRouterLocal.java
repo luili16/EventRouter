@@ -1,5 +1,6 @@
 package com.llx.eventrouter;
 
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 
@@ -20,7 +21,8 @@ class EventRouterLocal {
 
     private Map<Event, CopyOnWriteArrayList<Subscription>> mSubscribeMap = new ConcurrentHashMap<>();
 
-    EventRouterLocal() {}
+    EventRouterLocal() {
+    }
 
     /**
      * 订阅一个事件
@@ -45,13 +47,14 @@ class EventRouterLocal {
                 if (pTypes != null && pTypes.length <= 1) {
                     Class<?> pType;
                     if (pTypes.length == 1) {
-                        pType = pTypes[0];
-                        checkParcelable(pType);
+                        pType = checkParcelableAndConvertRawType(pTypes[0]);
                     } else {
                         pType = void.class;
                     }
-                    Class<?> returnType = method.getReturnType();
-                    checkParcelable(returnType);
+                    if (pType == null) {
+                        return;
+                    }
+                    Class<?> returnType = checkParcelableAndConvertRawType(method.getReturnType());
                     Event event = new Event(pType.getCanonicalName(), annotation.tag(),
                             returnType.getCanonicalName());
                     CopyOnWriteArrayList<Subscription> sList = mSubscribeMap.get(event);
@@ -66,7 +69,8 @@ class EventRouterLocal {
                     // 这样是为了避免产生歧义
                     if (!returnType.equals(void.class)) {
                         if (sList.size() > 1 || !annotation.type().equals(Type.BLOCK)) {
-                            throw new IllegalStateException("more than one subscription or wrong Type");
+                            throw new IllegalStateException("subscribe method can have only one return " +
+                                    "value and you should set 'type = Type.BLOCK' when you subscribe an method");
                         }
                     }
                     mSubscribeMap.put(event, sList);
@@ -75,22 +79,108 @@ class EventRouterLocal {
         }
     }
 
-    private static void checkParcelable(Class<?> aClass) {
-        Class<?>[] ifs = aClass.getInterfaces();
+    private static Class<?> checkParcelableAndConvertRawType(Class<?> cls) {
+
+        if (cls.equals(void.class) || cls.equals(Void.class)) {
+            return cls;
+        }
+
+        if (cls.equals(int.class) || cls.equals(Integer.class)) {
+            return Integer.class;
+        }
+
+        if (cls.equals(long.class) || cls.equals(Long.class)) {
+            return Long.class;
+        }
+
+        if (cls.equals(float.class) || cls.equals(Float.class)) {
+            return Float.class;
+        }
+
+        if (cls.equals(double.class) || cls.equals(Double.class)) {
+            return Double.class;
+        }
+
+        if (cls.equals(char.class) || cls.equals(Character.class)) {
+            return Character.class;
+        }
+
+        if (cls.equals(byte.class) || cls.equals(Byte.class)) {
+            return Byte.class;
+        }
+
+        if (cls.equals(int[].class)) {
+            return int[].class;
+        }
+
+        if (cls.equals(Integer[].class)) {
+            throw new IllegalStateException("param type or return type can't support Integer[], " +
+                    "you can use ArrayList<Integer> instead");
+        }
+
+        if (cls.equals(long[].class)) {
+            return long[].class;
+        }
+
+        if (cls.equals(Long[].class)) {
+            throw new IllegalStateException("param type or return type can't support Long[], " +
+                    "you can use ArrayList<Long> instead");
+        }
+
+        if (cls.equals(float[].class)) {
+            return float[].class;
+        }
+
+        if (cls.equals(Float[].class)) {
+            throw new IllegalStateException("param type or return type can't support Float[], " +
+                    "you can use ArrayList<Float> instead");
+        }
+
+        if (cls.equals(double[].class)) {
+            return double[].class;
+        }
+
+        if (cls.equals(Double[].class)) {
+            throw new IllegalStateException("param type or return type can't support Double[], " +
+                    "you can use ArrayList<Double> instead");
+        }
+
+        if (cls.equals(char[].class)) {
+            return char[].class;
+        }
+
+        if (cls.equals(Character[].class)) {
+            throw new IllegalStateException("param type or return type can't support Character[], " +
+                    "you can use ArrayList<Character> instead");
+        }
+
+        if (cls.equals(byte[].class)) {
+            return byte[].class;
+        }
+
+        if (cls.equals(Byte[].class)) {
+            throw new IllegalStateException("param type or return type can't support Byte[], " +
+                    "you can use ArrayList<Byte> instead");
+        }
+
+        String name = cls.getCanonicalName();
+        if (name.contains("[]")) {
+            throw new IllegalStateException("param type or return type can't support Parcelable[]," +
+                    "you can use ArrayList<Parcelable> instead");
+        }
+
+        Class<?>[] ifs = cls.getInterfaces();
         if (ifs != null && ifs.length > 0) {
             for (Class<?> c : ifs) {
                 if (c.equals(Parcelable.class)) {
                     //implement
-                    return;
+                    return cls;
                 }
             }
         }
+
         // not implement
         throw new IllegalStateException("param must implement parcelable");
-    }
-
-    private boolean isOriginalType(Class<?> eventType) {
-        return false;
     }
 
     public void unRegister(Object subscriber) {
@@ -119,10 +209,12 @@ class EventRouterLocal {
     }
 
 
+
+
     /**
      * 发布订阅事件
      *
-     * @param paramObj        订阅方法的参数
+     * @param paramObj   订阅方法的参数
      * @param tag        订阅方法的标志
      * @param returnType 订阅方法的返回值类型
      */
@@ -135,30 +227,30 @@ class EventRouterLocal {
             paramType = paramObj.getClass().getCanonicalName();
         }
 
-        Event event = new Event(paramType,tag,returnType);
+        Event event = new Event(paramType, tag, returnType);
         CopyOnWriteArrayList<Subscription> subscriptions = mSubscribeMap.get(event);
         if (subscriptions == null) {
-            Log.e(TAG,String.format("EventBus : cannot find %s from subscribedMap",event.toString()));
+            Log.e(TAG, String.format("EventBus : cannot find %s from subscribedMap", event.toString()));
             return null;
         }
 
-        for (Subscription subs: subscriptions) {
+        for (Subscription subs : subscriptions) {
             Executor executor = ExecutorFactory.create(subs.getThreadModel());
             Object subscribe = subs.getSubscribeRef();
             if (subscribe == null) {
-                Log.e(TAG,String.format("subscriber obj maybe recycled by GC,execute failed! currentEvent is %s",event.toString()));
+                Log.e(TAG, String.format("subscriber obj maybe recycled by GC,execute failed! currentEvent is %s", event.toString()));
                 continue;
             }
             Method method = subs.getMethod();
             try {
                 if (subs.getType() == Type.BLOCK) {
                     // 因为返回值只能有一个，所以默认只是第一个注册的有效
-                    return executor.submit(method,paramObj,subscribe);
+                    return executor.submit(method, paramObj, subscribe);
                 } else if (subs.getType() == Type.DEFAULT) {
-                    executor.execute(method,paramObj,subscribe);
+                    executor.execute(method, paramObj, subscribe);
                 }
             } catch (Exception e) {
-                Log.e(TAG,String.format("execute register method failed! method name is %s",method.getName()));
+                Log.e(TAG, String.format("execute register method failed! method name is %s", method.getName()));
                 return null;
             }
         }
@@ -173,11 +265,17 @@ class EventRouterLocal {
     /**
      * 发布订阅事件
      * 如果没有返回值可以直接用此方法
+     *
      * @param obj 订阅方法的参数
      * @param tag 订阅方法的标志
      */
     void post(Object obj, String tag) {
         //noinspection ResultOfMethodCallIgnored
         post(obj, tag, void.class.getCanonicalName());
+    }
+
+    // for test
+    Map<Event, CopyOnWriteArrayList<Subscription>> getSubscribeMap() {
+        return mSubscribeMap;
     }
 }

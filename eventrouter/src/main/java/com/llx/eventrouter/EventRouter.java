@@ -169,7 +169,7 @@ public class EventRouter {
      * @param tag         订阅方法标志
      * @param returnClass 返回值class
      * @param timeout     超时时间
-     * @param addresses   发送地址，如果为空，则对所有已经连接的进程去寻找匹配的事件发送
+     * @param addresses   发送地址，如果为空，则所有注册了此事件的进程都会执行
      * @return 执行的结果
      */
     public Object post(Object objParam, String tag, Class<?> returnClass, long timeout,
@@ -247,9 +247,7 @@ public class EventRouter {
                     }
                 }
             }
-        } catch (RemoteException e) {
-            Log.e(TAG, "unexpected error", e);
-        } catch (InterruptedException e) {
+        } catch (RemoteException | InterruptedException e) {
             Log.e(TAG, "unexpected error", e);
         }
         return toAddressList;
