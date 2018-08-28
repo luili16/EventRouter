@@ -7,10 +7,10 @@ import com.llx.eventrouter.execute.ThreadModel;
 
 import java.util.Arrays;
 
-public class SubscriberBaseTypeMirror {
+public class SubscriberParamType2 {
 
     private static final String TAG = "SubscriberParamType";
-
+    public String tag = "";
     public int i;
     public long l;
     public char c;
@@ -31,9 +31,10 @@ public class SubscriberBaseTypeMirror {
     public double[] ds;
     public Event1 event;
 
-    @Subscriber(tag = "Subscriber1_registerMethod1_void")
+    @Subscriber(tag = "Subscriber1_registerMethod1_void",threadModel = ThreadModel.POST)
     public void registerMethod1() {
         Log.d(TAG, "Subscriber1_registerMethod1_void");
+        this.tag = "call_void";
     }
 
     // ----- int Integer 相同 ------

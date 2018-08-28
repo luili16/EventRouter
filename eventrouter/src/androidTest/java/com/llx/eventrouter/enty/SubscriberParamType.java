@@ -12,29 +12,46 @@ public class SubscriberParamType {
 
     private static final String TAG = "SubscriberParamType";
 
+    public String tag = "";
     public int i;
     public long l;
     public char c;
     public byte b;
     public float f;
     public double d;
+    public boolean bo;
     public Integer ii;
     public Long ll;
     public Byte bb;
     public Character cc;
     public Float ff;
     public Double dd;
+    public String ss;
+    public Boolean boo;
     public int[] is;
     public long[] ls;
     public char[] cs;
     public byte[] bs;
     public float[] fs;
     public double[] ds;
+    public String[] strs;
     public Event1 event;
 
-    @Subscriber(tag = "Subscriber1_registerMethod1_void")
+    public ValueWrapper mValueWrapper;
+
+    public SubscriberParamType(ValueWrapper valueWrapper) {
+        mValueWrapper = valueWrapper;
+    }
+
+    public SubscriberParamType() {
+        mValueWrapper = new ValueWrapper();
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod1_void",threadModel = ThreadModel.POST)
     public void registerMethod1() {
         Log.d(TAG, "Subscriber1_registerMethod1_void");
+        this.tag = "call_void";
+        mValueWrapper.setTag("call_void");
     }
 
     // ----- int Integer 相同 ------
@@ -42,12 +59,14 @@ public class SubscriberParamType {
     public void registerMethod2(int i) {
         Log.d(TAG, "Subscriber1_registerMethod2_int = " + i);
         this.i = i;
+        mValueWrapper.setI(i);
     }
 
     @Subscriber(tag = "Subscriber1_registerMethod2_int", threadModel = ThreadModel.POST)
     public void registerMethod6(Integer i) {
         Log.d(TAG, "Subscriber1_registerMethod_Integer = " + i);
         this.ii = i;
+        mValueWrapper.setIi(ii);
     }
     // ----- int Integer 相同 ------
 
@@ -56,12 +75,14 @@ public class SubscriberParamType {
     public void registerMethod3(long l) {
         Log.d(TAG, "Subscriber1_registerMethod3_long = " + l);
         this.l = l;
+        mValueWrapper.setL(l);
     }
 
     @Subscriber(tag = "Subscriber1_registerMethod3_long", threadModel = ThreadModel.POST)
     public void registerMethod7(Long l) {
         Log.d(TAG, "Subscriber1_registerMethod7_Long = " + l);
         this.ll = l;
+        mValueWrapper.setLl(l);
     }
     // ----- long Long 相同 ----------
 
@@ -70,12 +91,14 @@ public class SubscriberParamType {
     public void registerMethod4(char c) {
         Log.d(TAG, "Subscriber1_registerMethod4_char = " + String.valueOf(c));
         this.c = c;
+        mValueWrapper.setC(c);
     }
 
     @Subscriber(tag = "Subscriber1_registerMethod4_char", threadModel = ThreadModel.POST)
     public void registerMethod14(Character c) {
         Log.d(TAG, "Subscriber1_registerMethod4_char = " + String.valueOf(c));
         this.cc = c;
+        mValueWrapper.setCc(c);
     }
     // ---- char character is same
 
@@ -84,37 +107,64 @@ public class SubscriberParamType {
     public void registerMethod5(byte b) {
         Log.d(TAG, "Subscriber1_registerMethod5_byte = " + b);
         this.b = b;
+        mValueWrapper.setB(b);
     }
 
     @Subscriber(tag = "Subscriber1_registerMethod5_byte", threadModel = ThreadModel.POST)
     public void registerMethod8(Byte b) {
         Log.d(TAG, "Subscriber1_registerMethod8_Byte = " + b);
         this.bb = b;
+        mValueWrapper.setBb(b);
     }
     // ---- byte Byte is same -----------------
 
-    @Subscriber(tag = "Subscriber1_registerMethod19_float",threadModel = ThreadModel.POST)
+    @Subscriber(tag = "Subscriber1_registerMethod19_float", threadModel = ThreadModel.POST)
     public void registerMethod19(float f) {
-        Log.d(TAG,"Subscriber1_registerMethod19_float = " + f);
+        Log.d(TAG, "Subscriber1_registerMethod19_float = " + f);
         this.f = f;
+        mValueWrapper.setF(f);
     }
 
-    @Subscriber(tag = "Subscriber1_registerMethod19_float",threadModel = ThreadModel.POST)
+    @Subscriber(tag = "Subscriber1_registerMethod19_float", threadModel = ThreadModel.POST)
     public void registerMethod20(Float f) {
-        Log.d(TAG,"Subscriber1_registerMethod19_float = " + f);
+        Log.d(TAG, "Subscriber1_registerMethod19_float = " + f);
         this.ff = f;
+        mValueWrapper.setFf(f);
     }
 
-    @Subscriber(tag = "Subscriber1_registerMethod21_double",threadModel = ThreadModel.POST)
+    @Subscriber(tag = "Subscriber1_registerMethod21_double", threadModel = ThreadModel.POST)
     public void registerMethod21(double f) {
-        Log.d(TAG,"Subscriber1_registerMethod21_double = " + f);
+        Log.d(TAG, "Subscriber1_registerMethod21_double = " + f);
         this.d = f;
+        mValueWrapper.setD(f);
     }
 
-    @Subscriber(tag = "Subscriber1_registerMethod21_double",threadModel = ThreadModel.POST)
+    @Subscriber(tag = "Subscriber1_registerMethod21_double", threadModel = ThreadModel.POST)
     public void registerMethod22(Double f) {
-        Log.d(TAG,"Subscriber1_registerMethod21_Double = " + f);
+        Log.d(TAG, "Subscriber1_registerMethod21_Double = " + f);
         this.dd = f;
+        mValueWrapper.setDd(f);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod25_boolean", threadModel = ThreadModel.POST)
+    public void registerMethod25(boolean b) {
+        Log.d(TAG,"Subscriber1_registerMethod25_boolean = " + b);
+        this.bo = b;
+        mValueWrapper.setBo(b);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod25_boolean", threadModel = ThreadModel.POST)
+    public void registerMethod26(Boolean b) {
+        Log.d(TAG,"Subscriber1_registerMethod25_boolean = " + b);
+        this.boo = b;
+        mValueWrapper.setBoo(b);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod21_String", threadModel = ThreadModel.POST)
+    public void registerMethod23(String s) {
+        Log.d(TAG,"Subscriber1_registerMethod21_String");
+        this.ss = s;
+        mValueWrapper.setSs(s);
     }
 
     // ---- Integer[] can not support
@@ -122,6 +172,7 @@ public class SubscriberParamType {
     public void registerMethod9(int[] is) {
         Log.d(TAG, "Subscriber1_registerMethod9_int[] = " + Arrays.asList(is));
         this.is = is;
+        mValueWrapper.setIs(is);
     }
 
 
@@ -130,6 +181,7 @@ public class SubscriberParamType {
     public void registerMethod10(long[] ls) {
         Log.d(TAG, "Subscriber1_registerMethod10_long[] = " + Arrays.asList(ls));
         this.ls = ls;
+        mValueWrapper.setLs(ls);
     }
 
     // ---- Character[] can't support-------
@@ -137,6 +189,7 @@ public class SubscriberParamType {
     public void registerMethod11(char[] cs) {
         Log.d(TAG, "Subscriber1_registerMethod11_char[] = " + Arrays.asList(cs));
         this.cs = cs;
+        mValueWrapper.setCs(cs);
     }
 
     // ---- Byte[] can't support
@@ -144,18 +197,28 @@ public class SubscriberParamType {
     public void registerMethod12(byte[] bs) {
         Log.d(TAG, "Subscriber1_registerMethod12_byte[] = " + Arrays.asList(bs));
         this.bs = bs;
+        mValueWrapper.setBs(bs);
     }
 
-    @Subscriber(tag = "Subscriber1_registerMethod23_float[]",threadModel = ThreadModel.POST)
+    @Subscriber(tag = "Subscriber1_registerMethod23_float[]", threadModel = ThreadModel.POST)
     public void registerMethod23(float[] fs) {
-        Log.d(TAG,"Subscriber1_registerMethod23_float");
+        Log.d(TAG, "Subscriber1_registerMethod23_float");
         this.fs = fs;
+        mValueWrapper.setFs(fs);
     }
 
-    @Subscriber(tag = "Subscriber1_registerMethod24_double[]",threadModel = ThreadModel.POST)
+    @Subscriber(tag = "Subscriber1_registerMethod24_double[]", threadModel = ThreadModel.POST)
     public void registerMethod24(double[] ds) {
-        Log.d(TAG,"Subscriber1_registerMethod24_double[]");
+        Log.d(TAG, "Subscriber1_registerMethod24_double[]");
         this.ds = ds;
+        mValueWrapper.setDs(ds);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod24_String[]",threadModel = ThreadModel.POST)
+    public void registerMethod25(String[] ss) {
+        Log.d(TAG,"Subscriber1_registerMethod24_String[] = " + Arrays.toString(ss));
+        this.strs = ss;
+        mValueWrapper.setStrs(ss);
     }
 
     // ---- Byte[] can't support
@@ -164,5 +227,6 @@ public class SubscriberParamType {
     public void registerMethod13(Event1 event) {
         Log.e(TAG, "Subscriber1_registerMethod13_parcelable = " + event.toString());
         this.event = event;
+        mValueWrapper.setEvent(event);
     }
 }

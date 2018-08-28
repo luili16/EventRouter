@@ -10,6 +10,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Transport implements IRouter {
@@ -21,10 +22,12 @@ public class Transport implements IRouter {
 
     public Transport(Context context, String pkg) {
         Intent routerIntent = new Intent();
-        String cls = "com.llx.eventrouter.RouteService";
+        String cls = "com.llx.eventrouter.remote.RouteService";
         routerIntent.setComponent(new ComponentName(pkg, cls));
         mConn = new RouterConn();
-        context.bindService(routerIntent, mConn, Context.BIND_AUTO_CREATE);
+        if (!context.bindService(routerIntent, mConn, Context.BIND_AUTO_CREATE)) {
+            Log.e(TAG,"bind service : " + cls + "failed! current package : " + pkg);
+        }
     }
 
     public void destroy(Context context) {
@@ -70,7 +73,7 @@ public class Transport implements IRouter {
         if (mRouter != null) {
             return mRouter.getAliveClient();
         }
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -93,6 +96,7 @@ public class Transport implements IRouter {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mRouter = IRouter.Stub.asInterface(service);
+            Log.d(TAG,"Router Service connected");
             if (mRouter != null) {
                 try {
                     mRouter.addReceiver(new ReceiverImpl());

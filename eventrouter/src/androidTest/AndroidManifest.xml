@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.llx.eventrouter.test" >
+    <application
+        android:allowBackup="false"
+        >
+        <service android:name="com.llx.eventrouter.RemoteService" android:process=":remote"/>
+    </application>
+</manifest>

@@ -32,7 +32,7 @@ class EventRouterLocal {
      * @throws IllegalStateException 当订阅方法的返回值不为空，并且type=Type.DEFAULT的时候会抛出此异常，因为
      *                               当一个订阅方法有返回值的时候则需要将返回值返回去，这意味着需要阻塞当前的线程
      */
-    public void register(Object subscriber) {
+    public void register(Object subscriber) throws UnSupportParameterException {
         if (subscriber == null) {
             return;
         }
@@ -49,7 +49,7 @@ class EventRouterLocal {
                     if (pTypes.length == 1) {
                         pType = checkParcelableAndConvertRawType(pTypes[0]);
                     } else {
-                        pType = void.class;
+                        pType = Void.class;
                     }
                     if (pType == null) {
                         return;
@@ -67,7 +67,7 @@ class EventRouterLocal {
                     sList.add(s);
                     // 这里约定如果一个订阅方法有一个返回值的话，那么此方法只能存在一个
                     // 这样是为了避免产生歧义
-                    if (!returnType.equals(void.class)) {
+                    if (!returnType.equals(Void.class)) {
                         if (sList.size() > 1 || !annotation.type().equals(Type.BLOCK)) {
                             throw new IllegalStateException("subscribe method can have only one return " +
                                     "value and you should set 'type = Type.BLOCK' when you subscribe an method");
@@ -79,10 +79,10 @@ class EventRouterLocal {
         }
     }
 
-    private static Class<?> checkParcelableAndConvertRawType(Class<?> cls) {
+    private static Class<?> checkParcelableAndConvertRawType(Class<?> cls) throws UnSupportParameterException {
 
         if (cls.equals(void.class) || cls.equals(Void.class)) {
-            return cls;
+            return Void.class;
         }
 
         if (cls.equals(int.class) || cls.equals(Integer.class)) {
@@ -109,12 +109,20 @@ class EventRouterLocal {
             return Byte.class;
         }
 
+        if (cls.equals(boolean.class) || cls.equals(Boolean.class)) {
+            return Boolean.class;
+        }
+
+        if (cls.equals(String.class)) {
+            return String.class;
+        }
+
         if (cls.equals(int[].class)) {
             return int[].class;
         }
 
         if (cls.equals(Integer[].class)) {
-            throw new IllegalStateException("param type or return type can't support Integer[], " +
+            throw new UnSupportParameterException("param type or return type can't support Integer[], " +
                     "you can use ArrayList<Integer> instead");
         }
 
@@ -123,7 +131,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Long[].class)) {
-            throw new IllegalStateException("param type or return type can't support Long[], " +
+            throw new UnSupportParameterException("param type or return type can't support Long[], " +
                     "you can use ArrayList<Long> instead");
         }
 
@@ -132,7 +140,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Float[].class)) {
-            throw new IllegalStateException("param type or return type can't support Float[], " +
+            throw new UnSupportParameterException("param type or return type can't support Float[], " +
                     "you can use ArrayList<Float> instead");
         }
 
@@ -141,7 +149,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Double[].class)) {
-            throw new IllegalStateException("param type or return type can't support Double[], " +
+            throw new UnSupportParameterException("param type or return type can't support Double[], " +
                     "you can use ArrayList<Double> instead");
         }
 
@@ -150,7 +158,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Character[].class)) {
-            throw new IllegalStateException("param type or return type can't support Character[], " +
+            throw new UnSupportParameterException("param type or return type can't support Character[], " +
                     "you can use ArrayList<Character> instead");
         }
 
@@ -159,13 +167,26 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Byte[].class)) {
-            throw new IllegalStateException("param type or return type can't support Byte[], " +
+            throw new UnSupportParameterException("param type or return type can't support Byte[], " +
                     "you can use ArrayList<Byte> instead");
+        }
+
+        if (cls.equals(boolean[].class)) {
+            return boolean[].class;
+        }
+
+        if (cls.equals(Boolean[].class)) {
+            throw new UnSupportParameterException("param type or return type can't support Boolean[], " +
+                    "you can use ArrayList<Boolean> instead");
+        }
+
+        if (cls.equals(String[].class)) {
+            return String[].class;
         }
 
         String name = cls.getCanonicalName();
         if (name.contains("[]")) {
-            throw new IllegalStateException("param type or return type can't support Parcelable[]," +
+            throw new UnSupportParameterException("param type or return type can't support Parcelable[]," +
                     "you can use ArrayList<Parcelable> instead");
         }
 
@@ -180,7 +201,7 @@ class EventRouterLocal {
         }
 
         // not implement
-        throw new IllegalStateException("param must implement parcelable");
+        throw new UnSupportParameterException("param must implement parcelable");
     }
 
     public void unRegister(Object subscriber) {
@@ -222,7 +243,7 @@ class EventRouterLocal {
 
         String paramType;
         if (paramObj == null) {
-            paramType = void.class.getCanonicalName();
+            paramType = Void.class.getCanonicalName();
         } else {
             paramType = paramObj.getClass().getCanonicalName();
         }
@@ -271,7 +292,7 @@ class EventRouterLocal {
      */
     void post(Object obj, String tag) {
         //noinspection ResultOfMethodCallIgnored
-        post(obj, tag, void.class.getCanonicalName());
+        post(obj, tag, Void.class.getCanonicalName());
     }
 
     // for test

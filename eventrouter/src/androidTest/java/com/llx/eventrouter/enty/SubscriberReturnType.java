@@ -19,18 +19,22 @@ public class SubscriberReturnType {
     public byte b;
     public float f;
     public double d;
+    public boolean bo;
     public Integer ii;
     public Long ll;
     public Byte bb;
     public Character cc;
     public Float ff;
     public Double dd;
+    public String s;
     public int[] is;
     public long[] ls;
     public char[] cs;
     public byte[] bs;
     public float[] fs;
     public double[] ds;
+    public boolean[] boo;
+    public String[] ss;
     public Event1 event;
 
     @Subscriber(tag = "Subscriber1_registerMethod1_void")
@@ -69,7 +73,6 @@ public class SubscriberReturnType {
         this.b = b;
         return b;
     }
-    // ---- byte Byte is same -----------------
 
     @Subscriber(tag = "Subscriber1_registerMethod19_float",threadModel = ThreadModel.POST,type = Type.BLOCK)
     public float registerMethod19(float f) {
@@ -83,6 +86,20 @@ public class SubscriberReturnType {
         Log.d(TAG,"Subscriber1_registerMethod21_double = " + f);
         this.d = f;
         return f;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod27_boolean", threadModel = ThreadModel.HANDLER,type = Type.BLOCK)
+    public boolean registerMethod27(boolean b) {
+        Log.d(TAG,"Subscriber1_registerMethod27_boolean = " + b);
+        this.bo = b;
+        return b;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod26_String",type = Type.BLOCK)
+    public String registerMethod26(String s) {
+        Log.d(TAG,"Subscriber1_registerMethod26_String = " + s);
+        this.s = s;
+        return s;
     }
 
 
@@ -131,6 +148,20 @@ public class SubscriberReturnType {
         Log.d(TAG,"Subscriber1_registerMethod24_double[]");
         this.ds = ds;
         return ds;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod28_boolean[]",type = Type.BLOCK)
+    public boolean[] registerMethod28(boolean[] bs) {
+        Log.d(TAG,"Subscriber1_registerMethod24_boolean[]");
+        this.boo = bs;
+        return bs;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod25_String[]",type = Type.BLOCK)
+    public String[] retisterMethod25(String[] ss) {
+        Log.d(TAG,"Subscriber1_registerMethod25_String[]");
+        this.ss = ss;
+        return ss;
     }
 
     @Subscriber(tag = "Subscriber1_registerMethod13_parcelable", threadModel = ThreadModel.POST,type = Type.BLOCK)

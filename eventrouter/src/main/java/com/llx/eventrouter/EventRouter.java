@@ -4,7 +4,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
+import android.os.Process;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -12,7 +14,10 @@ import com.llx.eventrouter.remote.Address;
 import com.llx.eventrouter.remote.IReceiver;
 import com.llx.eventrouter.remote.Transport;
 
+import java.lang.annotation.Target;
+import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,9 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class EventRouter {
+import static com.llx.eventrouter.Const.TAG;
 
-    private static final String TAG = "EventRouter";
+public class EventRouter {
 
     /**
      * 此key代表了每一个消息的类型
@@ -58,6 +63,11 @@ public class EventRouter {
      * 此key封装了发布事件的参数
      */
     private static final String KEY_EVENT_OBJ = "publish_event_obj";
+
+    /**
+     *  此key封装了发布事件的参数类型
+     */
+    private static final String KEY_EVENT_OBJ_CLS_TYPE = "publish_event_obj_cls_type";
 
     /**
      * 此key封装了发布事件的tag
@@ -129,12 +139,17 @@ public class EventRouter {
             mTransport.addReceiver(new IReceiver() {
                 @Override
                 public void onMessageReceive(String fromAddress, Bundle message) {
-                    if (!TextUtils.isEmpty(fromAddress) && message != null) {
-                        message.setClassLoader(EventRouter.class.getClassLoader());
-                        for (MessageObserver handler : mHandlers) {
-                            if (handler.handleMessage(fromAddress,message)) {
-                                return;
-                            }
+
+                    Log.d("main","fromAddress : " + fromAddress);
+
+                    if (TextUtils.isEmpty(fromAddress) || message == null) {
+                        return;
+                    }
+
+                    message.setClassLoader(EventRouter.class.getClassLoader());
+                    for (MessageObserver handler : mHandlers) {
+                        if (handler.handleMessage(fromAddress, message)) {
+                            return;
                         }
                     }
                 }
@@ -145,7 +160,7 @@ public class EventRouter {
                 }
             });
         } catch (RemoteException e) {
-            Log.e(TAG,"",e);
+            Log.e(TAG, "", e);
         }
         mHandlers.add(new ResultHandler());
         mHandlers.add(new ExecuteHandler());
@@ -154,7 +169,7 @@ public class EventRouter {
 
     }
 
-    public void register(Object subscriber) {
+    public void register(Object subscriber) throws UnSupportParameterException {
         mLocal.register(subscriber);
     }
 
@@ -175,29 +190,50 @@ public class EventRouter {
     public Object post(Object objParam, String tag, Class<?> returnClass, long timeout,
                        Address... addresses) throws TimeoutException {
         List<String> toAddressList;
+        long remainTime = timeout;
         if (addresses == null || addresses.length == 0) {
+
             // 从进程列表中查询出所有符合的事件并执行
-            toAddressList = prepare(objParam, tag, returnClass, timeout);
-            if (toAddressList.isEmpty()) {
-                return null;
+            long currentTime = SystemClock.uptimeMillis();
+
+            try {
+                toAddressList = prepare(objParam, tag, returnClass, timeout);
+                if (toAddressList.isEmpty()) {
+                    Log.e(TAG,"address list is empty");
+                    return null;
+                }
+                long elapsedTime = SystemClock.uptimeMillis();
+                remainTime = timeout - (elapsedTime - currentTime);
+                Log.d(TAG,"remainTime : " + remainTime);
+                if (remainTime <= 10) {
+                    throw new TimeoutException("query event timeout");
+                }
+
+            } catch (TimeoutException e) {
+                throw new TimeoutException(e);
             }
+
         } else {
+
             toAddressList = new ArrayList<>();
             for (Address address : addresses) {
                 toAddressList.add(address.toString());
             }
+
         }
 
-        if (returnClass.equals(void.class)) {
+        Log.d(TAG,"available address : " + toAddressList.toString());
+
+        if (returnClass.equals(Void.class)) {
             for (String toAddress : toAddressList) {
                 Publisher publisher = new Publisher(toAddress);
-                publisher.publish(objParam, tag, void.class.getCanonicalName(), timeout);
+                publisher.publish(objParam, tag, Void.class.getCanonicalName(), remainTime);
             }
             return null;
         } else {
             String toAddress = toAddressList.get(0);
             Publisher publisher = new Publisher(toAddress);
-            return publisher.publish(objParam, tag, returnClass.getCanonicalName(), timeout);
+            return publisher.publish(objParam, tag, returnClass.getCanonicalName(), remainTime);
         }
     }
 
@@ -226,18 +262,19 @@ public class EventRouter {
                 mSubsEventsSnapshot.remove(id);
                 throw new TimeoutException("query event timeout");
             }
+            Log.d(TAG,"query event finish");
             String paramType;
             if (objParam == null) {
-                paramType = void.class.getCanonicalName();
+                paramType = Void.class.getCanonicalName();
             } else {
                 paramType = objParam.getClass().getCanonicalName();
             }
             Event event = new Event(paramType, tag, returnCls.getCanonicalName());
-            EventListHolder holder = mSubsEventsSnapshot.get(id);
+            Log.d(TAG,"event is " + event.toString());
+            EventListHolder holder = mSubsEventsSnapshot.remove(id);
             if (holder == null) {
                 return toAddressList;
             }
-
             for (Map.Entry<String, ArrayList<Event>> entry : holder.mEventMap.entrySet()) {
                 String address = entry.getKey();
                 ArrayList<Event> events = entry.getValue();
@@ -247,6 +284,7 @@ public class EventRouter {
                     }
                 }
             }
+            Log.d(TAG,"toAddressList is " + toAddressList);
         } catch (RemoteException | InterruptedException e) {
             Log.e(TAG, "unexpected error", e);
         }
@@ -257,8 +295,32 @@ public class EventRouter {
         return post(objParam, tag, returnClass, DEFAULT_TIMEOUT);
     }
 
+    public void post(Object objParam,String tag,long timeout) throws TimeoutException {
+        post(objParam,tag,Void.class,timeout);
+    }
+
+    public void post(Object objParam,String tag) throws TimeoutException {
+        post(objParam,tag,Void.class,DEFAULT_TIMEOUT);
+    }
+
     public boolean ping(Address address) {
 
+        if (address == null) {
+            return false;
+        }
+
+        String addressStr = address.toString();
+
+        try {
+            List<String> aliveClient = mTransport.getAliveClient();
+            for (String client : aliveClient) {
+                if (TextUtils.equals(addressStr,client)) {
+                    return true;
+                }
+            }
+        } catch (RemoteException e) {
+            return false;
+        }
         return false;
     }
 
@@ -289,32 +351,35 @@ public class EventRouter {
             msg.putString(KEY_TYPE, TYPE_VALUE_OF_PUBLISH);
             msg.putString(KEY_ID, this.mId);
 
-            if (paramObj != null) {
-                convertType(paramObj, msg, KEY_EVENT_OBJ);
+            try {
+                putValue(paramObj, msg, KEY_EVENT_OBJ);
+            } catch (UnSupportParameterException e) {
+                Log.e(TAG,"",e);
+                return null;
             }
 
             msg.putString(KEY_TAG, tag);
             msg.putString(KEY_RETURN_CLASS_NAME, returnType);
 
-            if (returnType.equals(void.class.getCanonicalName())) {
+            if (returnType.equals(Void.class.getCanonicalName())) {
                 // 返回值为空，直接返回
                 try {
+                    Log.d(TAG,"publish msg to " + mAddress + " return");
                     mTransport.send(mAddress, msg);
                 } catch (RemoteException e) {
                     Log.e(TAG, "send msg to " + mAddress + " failed", e);
                 }
             } else {
-                // 其他类型需要缓存执行的时间，等待执行结果的返回
+                // 其他类型需要缓存执行的过程，等待执行结果的返回
                 mWaiter.put(mId, this);
                 try {
+                    Log.d(TAG,"publish msg to " + mAddress + " wait return value");
                     mTransport.send(mAddress, msg);
                     if (!mSignal.await(timeout, TimeUnit.MILLISECONDS)) {
                         throw new TimeoutException("wait result from remote process timeout");
                     }
-                } catch (RemoteException e) {
-                    Log.e(TAG, "", e);
-                    return null;
-                } catch (InterruptedException e) {
+                    Log.d(TAG,"wait finish result is " + (mResult == null?"null":mResult.toString()));
+                } catch (RemoteException | InterruptedException e) {
                     Log.e(TAG, "", e);
                     return null;
                 } finally {
@@ -349,6 +414,7 @@ public class EventRouter {
         public boolean handleMessage(String fromAddress, Bundle message) {
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY.equals(typeValue)) {
+                Log.d(TAG,"type value of query current pid is " + Process.myPid());
                 String id = message.getString(KEY_ID);
                 Bundle valueMsg = new Bundle(getClass().getClassLoader());
                 ArrayList<Event> events = new ArrayList<>(mLocal.queryEvent());
@@ -376,16 +442,19 @@ public class EventRouter {
 
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY_RESULT.equals(typeValue)) {
-
+                Log.d(TAG,"type value query result pid is " + Process.myPid());
                 ArrayList<Event> events = message.getParcelableArrayList(KEY_QUERY_LIST);
                 if (events == null) {
                     events = new ArrayList<>();
                 }
+                Log.d(TAG,"events is : " + events.toString());
                 String id = message.getString(KEY_ID);
                 EventListHolder holder = mSubsEventsSnapshot.get(id);
                 if (holder != null) {
                     holder.mEventMap.put(fromAddress, events);
                     holder.mSignal.countDown();
+                } else {
+                    Log.d(TAG,"holder is null!!!!");
                 }
                 return true;
             }
@@ -402,6 +471,7 @@ public class EventRouter {
         public boolean handleMessage(String fromAddress, Bundle message) {
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_PUBLISH.equals(typeValue)) {
+                Log.d(TAG,"type value of publish process id = " + Process.myPid());
                 // 执行一个发布事件
                 String id = message.getString(KEY_ID);
                 Object paramObj = message.get(KEY_EVENT_OBJ);
@@ -409,11 +479,15 @@ public class EventRouter {
                 String returnType = message.getString(KEY_RETURN_CLASS_NAME);
                 Object returnValue = mLocal.post(paramObj, tag, returnType);
                 // 只有返回值是非空才会发送回去
-                if (!TextUtils.isEmpty(returnType) && !returnType.equals(void.class.getCanonicalName())) {
+                if (!TextUtils.isEmpty(returnType) && !returnType.equals(Void.class.getCanonicalName())) {
                     Bundle msg = new Bundle(getClass().getClassLoader());
                     msg.putString(KEY_TYPE, TYPE_VALUE_OF_PUBLISH_RETURN_VALUE);
                     if (returnValue != null) {
-                        convertType(returnValue, msg, KEY_RETURN_VALUE);
+                        try {
+                            putValue(returnValue, msg, KEY_RETURN_VALUE);
+                        } catch (UnSupportParameterException e) {
+                            e.printStackTrace();
+                        }
                     }
                     msg.putString(KEY_ID, id);
                     try {
@@ -436,6 +510,7 @@ public class EventRouter {
 
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_PUBLISH_RETURN_VALUE.equals(typeValue)) {
+                Log.d(TAG,"type value of publish return value");
                 Object returnValue = message.get(KEY_RETURN_VALUE);
                 String id = message.getString(KEY_ID);
                 if (!TextUtils.isEmpty(id)) {
@@ -458,19 +533,114 @@ public class EventRouter {
      * @param msg   bundle
      * @param key   key
      */
-    private static void convertType(Object value, Bundle msg, String key) {
-        if (value instanceof Integer) {
-            msg.putInt(key, (Integer) value);
-        } else if (value instanceof Long) {
-            msg.putLong(key, (Long) value);
-        } else if (value instanceof Byte) {
-            msg.putByte(key, (Byte) value);
-        } else if (value instanceof String) {
-            msg.putString(key, (String) value);
-        } else if (value instanceof ArrayList) {
-            msg.putParcelableArrayList(key, (ArrayList<? extends Parcelable>) value);
-        } else if (value instanceof Parcelable) {
-            msg.putParcelable(key, (Parcelable) value);
+    private static void putValue(Object value, Bundle msg, String key) throws UnSupportParameterException {
+
+        if (value == null) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Void.class.getCanonicalName());
+            return;
         }
+
+        if (value.getClass().equals(Integer.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Integer.class.getCanonicalName());
+            msg.putInt(key, (Integer) value);
+            return;
+        }
+
+        if (value.getClass().equals(Long.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Long.class.getCanonicalName());
+            msg.putLong(key, (Long) value);
+            return;
+        }
+
+        if (value.getClass().equals(Float.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Float.class.getCanonicalName());
+            msg.putFloat(key, (Float) value);
+            return;
+        }
+
+        if (value.getClass().equals(Double.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Double.class.getCanonicalName());
+            msg.putDouble(key, (Double) value);
+            return;
+        }
+
+        if (value.getClass().equals(Character.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Character.class.getCanonicalName());
+            msg.putChar(key, (Character) value);
+            return;
+        }
+
+        if (value.getClass().equals(Byte.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Byte.class.getCanonicalName());
+            msg.putByte(key, (Byte) value);
+            return;
+        }
+
+        if (value.getClass().equals(int[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,int[].class.getCanonicalName());
+            msg.putIntArray(key, (int[]) value);
+            return;
+        }
+
+        if (value.getClass().equals(long[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,long[].class.getCanonicalName());
+            msg.putLongArray(key, (long[]) value);
+            return;
+        }
+
+        if (value.getClass().equals(float[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,float[].class.getCanonicalName());
+            msg.putFloatArray(key, (float[]) value);
+            return;
+        }
+
+        if (value.getClass().equals(double[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,double[].class.getCanonicalName());
+            msg.putDoubleArray(key, (double[]) value);
+            return;
+        }
+
+        if (value.getClass().equals(char[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,char[].class.getCanonicalName());
+            msg.putCharArray(key, (char[]) value);
+            return;
+        }
+
+        if (value.getClass().equals(byte[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,byte[].class.getCanonicalName());
+            msg.putByteArray(key, (byte[]) value);
+            return;
+        }
+
+        if (value.getClass().equals(String[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,String[].class.getCanonicalName());
+            msg.putStringArray(key, (String[]) value);
+            return;
+        }
+
+        if (value.getClass().equals(ArrayList.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,ArrayList.class.getCanonicalName());
+            try {
+                //noinspection unchecked
+                msg.putParcelableArrayList(key, (ArrayList) value);
+            } catch (Exception e) {
+                throw new UnSupportParameterException("element of ArrayList must implement Parcelable");
+            }
+        }
+
+        String clsName = value.getClass().getCanonicalName();
+        if (clsName.contains("[]")) {
+            throw new UnSupportParameterException("param type can't support Object array," +
+                    "you can use ArrayList<Parcelable> instead");
+        }
+
+        if (value instanceof Parcelable) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Parcelable.class.getCanonicalName());
+            msg.putParcelable(key, (Parcelable) value);
+            return;
+        }
+
+        throw new UnSupportParameterException("unSupport param : " + value.toString());
+
     }
 }

@@ -30,14 +30,14 @@ public class RouteService extends Service {
         private Map<Address,IReceiver> mReceiverMap = new ConcurrentHashMap<>();
 
         @Override
-        public void send(String toAddress, Bundle msg) throws RemoteException {
+        public void send(String toAddressStr, Bundle msg) throws RemoteException {
             Address fromAddress = Address.toAddress(Binder.getCallingPid());
-            Address address = Address.toAddress(toAddress);
-            if (address == null) {
+            Address toAddress = Address.toAddress(toAddressStr);
+            if (toAddress == null) {
                 return;
             }
 
-            boolean isBroadcast = Address.isBroadcast(address);
+            boolean isBroadcast = Address.isBroadcast(toAddress);
             if (isBroadcast) {
                 Set<Address> keySet = mReceiverMap.keySet();
                 for (Address connAddress : keySet) {
@@ -46,22 +46,22 @@ public class RouteService extends Service {
                         continue;
                     }
                     IReceiver receiver = mReceiverMap.get(connAddress);
-                    try {
+
+                    if (receiver != null && receiver.asBinder().pingBinder()) {
+                        Log.d("main","receiver : " + receiver + " onMessageReceive");
                         receiver.onMessageReceive(fromAddress.toString(),msg);
-                    } catch (Exception e) {
-                        Log.e(TAG, "RouterImpl execute receiver.onMessageReceive(where,msg) failed " +
-                                "when broadcast message", e);
                     }
                 }
+
                 return;
             }
 
-            IReceiver receiver = mReceiverMap.get(address);
+            IReceiver receiver = mReceiverMap.get(toAddress);
+
             if (receiver == null || !receiver.asBinder().pingBinder()) {
-                Log.e(TAG,String.format("address(%s) lost connect send failed",address.toString()));
+                Log.e(TAG,String.format("address(%s) lost connect send failed",toAddress.toString()));
                 return;
             }
-
             receiver.onMessageReceive(fromAddress.toString(),msg);
         }
 
