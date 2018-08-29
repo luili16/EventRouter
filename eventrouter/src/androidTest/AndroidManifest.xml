@@ -3,6 +3,7 @@
     <application
         android:allowBackup="false"
         >
+        <service android:name="com.llx.eventrouter.remote.RouteService" android:exported="true" android:process=":routeService"/>
         <service android:name="com.llx.eventrouter.RemoteService" android:process=":remote"/>
     </application>
 </manifest>
