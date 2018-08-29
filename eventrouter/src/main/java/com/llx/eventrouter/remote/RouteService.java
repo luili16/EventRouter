@@ -48,7 +48,6 @@ public class RouteService extends Service {
                     IReceiver receiver = mReceiverMap.get(connAddress);
 
                     if (receiver != null && receiver.asBinder().pingBinder()) {
-                        Log.d("main","receiver : " + receiver + " onMessageReceive");
                         receiver.onMessageReceive(fromAddress.toString(),msg);
                     }
                 }

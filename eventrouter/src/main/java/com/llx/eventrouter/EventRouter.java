@@ -140,8 +140,6 @@ public class EventRouter {
                 @Override
                 public void onMessageReceive(String fromAddress, Bundle message) {
 
-                    Log.d("main","fromAddress : " + fromAddress);
-
                     if (TextUtils.isEmpty(fromAddress) || message == null) {
                         return;
                     }
@@ -204,7 +202,6 @@ public class EventRouter {
                 }
                 long elapsedTime = SystemClock.uptimeMillis();
                 remainTime = timeout - (elapsedTime - currentTime);
-                Log.d(TAG,"remainTime : " + remainTime);
                 if (remainTime <= 10) {
                     throw new TimeoutException("query event timeout");
                 }
@@ -221,8 +218,6 @@ public class EventRouter {
             }
 
         }
-
-        Log.d(TAG,"available address : " + toAddressList.toString());
 
         if (returnClass.equals(Void.class)) {
             for (String toAddress : toAddressList) {
@@ -262,7 +257,6 @@ public class EventRouter {
                 mSubsEventsSnapshot.remove(id);
                 throw new TimeoutException("query event timeout");
             }
-            Log.d(TAG,"query event finish");
             String paramType;
             if (objParam == null) {
                 paramType = Void.class.getCanonicalName();
@@ -270,7 +264,7 @@ public class EventRouter {
                 paramType = objParam.getClass().getCanonicalName();
             }
             Event event = new Event(paramType, tag, returnCls.getCanonicalName());
-            Log.d(TAG,"event is " + event.toString());
+
             EventListHolder holder = mSubsEventsSnapshot.remove(id);
             if (holder == null) {
                 return toAddressList;
@@ -284,7 +278,6 @@ public class EventRouter {
                     }
                 }
             }
-            Log.d(TAG,"toAddressList is " + toAddressList);
         } catch (RemoteException | InterruptedException e) {
             Log.e(TAG, "unexpected error", e);
         }
@@ -365,7 +358,6 @@ public class EventRouter {
             if (returnType.equals(Void.class.getCanonicalName())) {
                 // 返回值为空，直接返回
                 try {
-                    Log.d(TAG,"publish msg to " + mAddress + " return");
                     mTransport.send(mAddress, msg);
                 } catch (RemoteException e) {
                     Log.e(TAG, "send msg to " + mAddress + " failed", e);
@@ -374,12 +366,10 @@ public class EventRouter {
                 // 其他类型需要缓存执行的过程，等待执行结果的返回
                 mWaiter.put(mId, this);
                 try {
-                    Log.d(TAG,"publish msg to " + mAddress + " wait return value");
                     mTransport.send(mAddress, msg);
                     if (!mSignal.await(timeout, TimeUnit.MILLISECONDS)) {
                         throw new TimeoutException("wait result from remote process timeout");
                     }
-                    Log.d(TAG,"wait finish result is " + (mResult == null?"null":mResult.toString()));
                 } catch (RemoteException | InterruptedException e) {
                     Log.e(TAG, "", e);
                     return null;
@@ -415,7 +405,6 @@ public class EventRouter {
         public boolean handleMessage(String fromAddress, Bundle message) {
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY.equals(typeValue)) {
-                Log.d(TAG,"type value of query current pid is " + Process.myPid());
                 String id = message.getString(KEY_ID);
                 Bundle valueMsg = new Bundle(getClass().getClassLoader());
                 ArrayList<Event> events = new ArrayList<>(mLocal.queryEvent());
@@ -443,19 +432,15 @@ public class EventRouter {
 
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_QUERY_RESULT.equals(typeValue)) {
-                Log.d(TAG,"type value query result pid is " + Process.myPid());
                 ArrayList<Event> events = message.getParcelableArrayList(KEY_QUERY_LIST);
                 if (events == null) {
                     events = new ArrayList<>();
                 }
-                Log.d(TAG,"events is : " + events.toString());
                 String id = message.getString(KEY_ID);
                 EventListHolder holder = mSubsEventsSnapshot.get(id);
                 if (holder != null) {
                     holder.mEventMap.put(fromAddress, events);
                     holder.mSignal.countDown();
-                } else {
-                    Log.d(TAG,"holder is null!!!!");
                 }
                 return true;
             }
@@ -472,7 +457,6 @@ public class EventRouter {
         public boolean handleMessage(String fromAddress, Bundle message) {
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_PUBLISH.equals(typeValue)) {
-                Log.d(TAG,"type value of publish process id = " + Process.myPid());
                 // 执行一个发布事件
                 String id = message.getString(KEY_ID);
                 Object paramObj = message.get(KEY_EVENT_OBJ);
@@ -511,7 +495,6 @@ public class EventRouter {
 
             String typeValue = message.getString(KEY_TYPE);
             if (TYPE_VALUE_OF_PUBLISH_RETURN_VALUE.equals(typeValue)) {
-                Log.d(TAG,"type value of publish return value");
                 Object returnValue = message.get(KEY_RETURN_VALUE);
                 String id = message.getString(KEY_ID);
                 if (!TextUtils.isEmpty(id)) {
