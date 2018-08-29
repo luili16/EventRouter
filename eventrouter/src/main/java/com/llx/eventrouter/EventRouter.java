@@ -344,7 +344,8 @@ public class EventRouter {
             this.mSignal = new CountDownLatch(1);
         }
 
-        Object publish(Object paramObj, String tag, String returnType, long timeout) throws TimeoutException {
+        Object publish(Object paramObj, String tag, String returnType, long timeout)
+                throws TimeoutException {
 
             // 封装消息
             Bundle msg = new Bundle(getClass().getClassLoader());
@@ -576,6 +577,18 @@ public class EventRouter {
             return;
         }
 
+        if (value.getClass().equals(String.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,String.class.getCanonicalName());
+            msg.putString(key, (String) value);
+            return;
+        }
+
+        if (value.getClass().equals(Boolean.class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,Boolean.class.getCanonicalName());
+            msg.putBoolean(key, (Boolean) value);
+            return;
+        }
+
         if (value.getClass().equals(int[].class)) {
             msg.putString(KEY_EVENT_OBJ_CLS_TYPE,int[].class.getCanonicalName());
             msg.putIntArray(key, (int[]) value);
@@ -612,6 +625,12 @@ public class EventRouter {
             return;
         }
 
+        if (value.getClass().equals(boolean[].class)) {
+            msg.putString(KEY_EVENT_OBJ_CLS_TYPE,boolean[].class.getCanonicalName());
+            msg.putBooleanArray(key, (boolean[]) value);
+            return;
+        }
+
         if (value.getClass().equals(String[].class)) {
             msg.putString(KEY_EVENT_OBJ_CLS_TYPE,String[].class.getCanonicalName());
             msg.putStringArray(key, (String[]) value);
@@ -626,6 +645,7 @@ public class EventRouter {
             } catch (Exception e) {
                 throw new UnSupportParameterException("element of ArrayList must implement Parcelable");
             }
+            return;
         }
 
         String clsName = value.getClass().getCanonicalName();

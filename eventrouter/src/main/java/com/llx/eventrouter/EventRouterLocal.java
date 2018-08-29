@@ -9,6 +9,7 @@ import com.llx.eventrouter.execute.ExecutorFactory;
 import com.llx.eventrouter.execute.ThreadModel;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -122,8 +123,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Integer[].class)) {
-            throw new UnSupportParameterException("param type or return type can't support Integer[], " +
-                    "you can use ArrayList<Integer> instead");
+            throw new UnSupportParameterException("param type or return type can't support Integer[]");
         }
 
         if (cls.equals(long[].class)) {
@@ -131,8 +131,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Long[].class)) {
-            throw new UnSupportParameterException("param type or return type can't support Long[], " +
-                    "you can use ArrayList<Long> instead");
+            throw new UnSupportParameterException("param type or return type can't support Long[], ");
         }
 
         if (cls.equals(float[].class)) {
@@ -140,8 +139,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Float[].class)) {
-            throw new UnSupportParameterException("param type or return type can't support Float[], " +
-                    "you can use ArrayList<Float> instead");
+            throw new UnSupportParameterException("param type or return type can't support Float[], ");
         }
 
         if (cls.equals(double[].class)) {
@@ -149,8 +147,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Double[].class)) {
-            throw new UnSupportParameterException("param type or return type can't support Double[], " +
-                    "you can use ArrayList<Double> instead");
+            throw new UnSupportParameterException("param type or return type can't support Double[], ");
         }
 
         if (cls.equals(char[].class)) {
@@ -158,8 +155,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Character[].class)) {
-            throw new UnSupportParameterException("param type or return type can't support Character[], " +
-                    "you can use ArrayList<Character> instead");
+            throw new UnSupportParameterException("param type or return type can't support Character[], ");
         }
 
         if (cls.equals(byte[].class)) {
@@ -167,8 +163,7 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Byte[].class)) {
-            throw new UnSupportParameterException("param type or return type can't support Byte[], " +
-                    "you can use ArrayList<Byte> instead");
+            throw new UnSupportParameterException("param type or return type can't support Byte[], ");
         }
 
         if (cls.equals(boolean[].class)) {
@@ -176,18 +171,20 @@ class EventRouterLocal {
         }
 
         if (cls.equals(Boolean[].class)) {
-            throw new UnSupportParameterException("param type or return type can't support Boolean[], " +
-                    "you can use ArrayList<Boolean> instead");
+            throw new UnSupportParameterException("param type or return type can't support Boolean[], ");
         }
 
         if (cls.equals(String[].class)) {
             return String[].class;
         }
 
+        if (cls.equals(ArrayList.class)) {
+            return ArrayList.class;
+        }
+
         String name = cls.getCanonicalName();
         if (name.contains("[]")) {
-            throw new UnSupportParameterException("param type or return type can't support Parcelable[]," +
-                    "you can use ArrayList<Parcelable> instead");
+            throw new UnSupportParameterException("param type or return type can't support Parcelable[],");
         }
 
         Class<?>[] ifs = cls.getInterfaces();

@@ -45,6 +45,8 @@ public class Event1 implements Parcelable {
     public Event1() {
     }
 
+
+
     protected Event1(Parcel in) {
         this.a = in.readString();
         this.b = in.readString();

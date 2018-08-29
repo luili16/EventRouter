@@ -37,6 +37,11 @@ public class SubscriberExp {
 
     }
 
+    @Subscriber(tag = "SubscriberExp_boolean_array")
+    public void testBoolean(Boolean[] bs) {
+
+    }
+
     @Subscriber(tag = "SubscriberExp_parcelable_array")
     public void testParcelable(Parcelable[] ps) {
 

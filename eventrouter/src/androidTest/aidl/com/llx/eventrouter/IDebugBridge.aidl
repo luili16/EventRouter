@@ -5,4 +5,5 @@ package com.llx.eventrouter;
 import com.llx.eventrouter.enty.ValueWrapper;
 interface IDebugBridge {
    ValueWrapper getVal();
+   void setCmd(String cmd);
 }

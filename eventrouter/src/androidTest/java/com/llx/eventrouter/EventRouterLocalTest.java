@@ -1,6 +1,7 @@
 package com.llx.eventrouter;
 
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 
 import com.llx.eventrouter.enty.Event1;
 import com.llx.eventrouter.enty.SubscriberParamType2;
@@ -15,6 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -312,6 +315,19 @@ public class EventRouterLocalTest {
     }
 
     @Test
+    public void postBooleanArrayTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        boolean[] bs = new boolean[]{true,false,true};
+        erl.post(bs,"Subscriber1_registerMethod30_boolean[]");
+        assertArrayEquals(bs,sbt.boos);
+    }
+
+    @Test
     public void postStringArrayTest() throws Exception {
 
         SubscriberParamType sbt = new SubscriberParamType();
@@ -323,6 +339,160 @@ public class EventRouterLocalTest {
         String[] strs = new String[]{"aa", "bb", "cc"};
         erl.post(strs, "Subscriber1_registerMethod24_String[]");
         assertArrayEquals(strs, sbt.strs);
+    }
+
+    @Test
+    public void postParcelableArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Event1> event1s = new ArrayList<>();
+        event1s.add(new Event1("ab","cd"));
+        event1s.add(new Event1("cd,","ef"));
+        event1s.add(new Event1("hj,","jk"));
+        event1s.add(new Event1("lm,","no"));
+        event1s.add(new Event1("pq,","rs"));
+
+        erl.post(event1s,"Subscriber1_registerMethod29_parcelableArrayList");
+        assertArrayEquals(event1s.toArray(),sbt.event1s.toArray());
+
+    }
+
+    @Test
+    public void postIntegerArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Integer> integers = new ArrayList<>();
+        integers.add(1);
+        integers.add(2);
+        integers.add(0);
+        integers.add(Integer.MIN_VALUE);
+        integers.add(Integer.MAX_VALUE);
+
+        erl.post(integers,"Subscriber1_registerMethod29_integerArrayList");
+        assertArrayEquals(integers.toArray(),sbt.integers.toArray());
+    }
+
+    @Test
+    public void postLongArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Long> longs = new ArrayList<>();
+        longs.add(1L);
+        longs.add(2L);
+        longs.add(0L);
+        longs.add(Long.MIN_VALUE);
+        longs.add(Long.MAX_VALUE);
+
+        erl.post(longs,"Subscriber1_registerMethod29_longArrayList");
+        assertArrayEquals(longs.toArray(),sbt.longs.toArray());
+    }
+
+    @Test
+    public void postCharacterArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Character> characters = new ArrayList<>();
+        characters.add('a');
+        characters.add('&');
+        characters.add('z');
+
+        erl.post(characters,"Subscriber1_registerMethod29_charactersArrayList");
+
+        assertArrayEquals(characters.toArray(),sbt.characters.toArray());
+
+    }
+
+    @Test
+    public void postByteArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Byte> bytes = new ArrayList<>();
+        bytes.add((byte) 1);
+        bytes.add((byte) 0);
+        bytes.add(Byte.MIN_VALUE);
+        bytes.add(Byte.MAX_VALUE);
+
+        erl.post(bytes,"Subscriber1_registerMethod29_bytesArrayList");
+        assertArrayEquals(bytes.toArray(),sbt.bytes.toArray());
+    }
+
+    @Test
+    public void postFloatArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Float> floats = new ArrayList<>();
+        floats.add(0.1f);
+        floats.add(0.22f);
+        floats.add(0.001f);
+        floats.add(Float.MIN_VALUE);
+        floats.add(Float.MAX_VALUE);
+
+        erl.post(floats,"Subscriber1_registerMethod29_floatsArrayList");
+
+        assertArrayEquals(floats.toArray(),sbt.floats.toArray());
+    }
+
+    @Test
+    public void postDoubleArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Double> doubles = new ArrayList<>();
+        doubles.add(0.1d);
+        doubles.add(0.2d);
+        doubles.add(0.4d);
+        doubles.add(Double.MIN_VALUE);
+        doubles.add(Double.MAX_VALUE);
+
+        erl.post(doubles,"Subscriber1_registerMethod29_doubleArrayList");
+
+        assertArrayEquals(doubles.toArray(),sbt.doubles.toArray());
+    }
+
+    @Test
+    public void postBooleanArrayListTest() throws Exception {
+        SubscriberParamType sbt = new SubscriberParamType();
+        SubscriberParamType2 sbtm = new SubscriberParamType2();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(sbt);
+        erl.register(sbtm);
+
+        ArrayList<Boolean> booleans = new ArrayList<>();
+        booleans.add(true);
+        booleans.add(false);
+        booleans.add(true);
+
+        erl.post(booleans,"Subscriber1_registerMethod29_booleanArrayList");
+
+        assertArrayEquals(booleans.toArray(),sbt.booleans.toArray());
+
     }
 
     @Test
@@ -510,6 +680,130 @@ public class EventRouterLocalTest {
         assertArrayEquals(strs,rets);
     }
 
+    @Test
+    public void returnParcelableArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Event1> event1s = new ArrayList<>();
+        event1s.add(new Event1("a","b"));
+        event1s.add(new Event1("c","d"));
+        event1s.add(new Event1("e","f"));
+        event1s.add(new Event1("h","g"));
+
+        ArrayList<Event1> ret = (ArrayList<Event1>) erl.post(event1s,"Subscriber1_registerMethod13_parcelableArrayList",ArrayList.class.getCanonicalName());
+
+        assertArrayEquals(event1s.toArray(),ret.toArray());
+    }
+
+    @Test
+    public void returnIntegerArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Integer> integers = new ArrayList<>();
+        integers.add(0);
+        integers.add(1);
+        integers.add(Integer.MIN_VALUE);
+        integers.add(Integer.MAX_VALUE);
+
+        ArrayList<Integer> ret = (ArrayList<Integer>) erl.post(integers,"Subscriber1_registerMethod13_integerArrayList",ArrayList.class.getCanonicalName());
+        assertArrayEquals(integers.toArray(),ret.toArray());
+    }
+
+    @Test
+    public void returnLongArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Long> longs = new ArrayList<>();
+        longs.add(1L);
+        longs.add(0L);
+        longs.add(Long.MAX_VALUE);
+        longs.add(Long.MIN_VALUE);
+
+        ArrayList<Long> ret = (ArrayList<Long>) erl.post(longs,"Subscriber1_registerMethod13_longArrayList",ArrayList.class.getCanonicalName());
+        assertArrayEquals(longs.toArray(),ret.toArray());
+    }
+
+    @Test
+    public void returnCharacterArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Character> characters = new ArrayList<>();
+        characters.add('a');
+        characters.add('b');
+        characters.add('c');
+
+        ArrayList<Character> cs = (ArrayList<Character>) erl.post(characters,"Subscriber1_registerMethod13_characterArrayList",ArrayList.class.getCanonicalName());
+        assertArrayEquals(characters.toArray(),cs.toArray());
+    }
+
+    @Test
+    public void returnByteArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Byte> bytes = new ArrayList<>();
+        bytes.add((byte) 2);
+        bytes.add((byte) 3);
+        ArrayList<Byte> rets = (ArrayList<Byte>) erl.post(bytes,"Subscriber1_registerMethod13_bytesArrayList",ArrayList.class.getCanonicalName());
+        assertArrayEquals(bytes.toArray(),rets.toArray());
+    }
+
+    @Test
+    public void returnFloatArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Float> floats = new ArrayList<>();
+        floats.add(0.10f);
+        floats.add(-0.1f);
+        floats.add(Float.MIN_VALUE);
+        floats.add(Float.MAX_VALUE);
+
+        ArrayList<Float> ret = (ArrayList<Float>) erl.post(floats,"Subscriber1_registerMethod13_floatArrayList",ArrayList.class.getCanonicalName());
+        assertArrayEquals(floats.toArray(),ret.toArray());
+    }
+
+    @Test
+    public void returnDoubleArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Double> doubles = new ArrayList<>();
+        doubles.add(0.1d);
+        doubles.add(0.2d);
+        doubles.add(0.3d);
+
+        ArrayList<Double> ret = (ArrayList<Double>) erl.post(doubles,"Subscriber1_registerMethod13_doubleArrayList",ArrayList.class.getCanonicalName());
+
+        assertArrayEquals(doubles.toArray(),ret.toArray());
+    }
+
+    public void returnBooleanArrayList() throws Exception {
+        SubscriberReturnType srt = new SubscriberReturnType();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(srt);
+
+        ArrayList<Boolean> booleans = new ArrayList<>();
+        booleans.add(false);
+        booleans.add(true);
+        booleans.add(false);
+
+        ArrayList<Boolean> ret = (ArrayList<Boolean>) erl.post(booleans,"Subscriber1_registerMethod13_booleanArrayList",ArrayList.class.getCanonicalName());
+
+        assertArrayEquals(booleans.toArray(),ret.toArray());
+    }
+
     @Test(expected = UnSupportParameterException.class)
     public void exceptionIntegerArrayTest() throws Exception {
         SubscriberExp se = new SubscriberExp();
@@ -553,6 +847,13 @@ public class EventRouterLocalTest {
     }
 
     @Test(expected = UnSupportParameterException.class)
+    public void exceptionBooleanArrayTest() throws Exception {
+        SubscriberExp se = new SubscriberExp();
+        EventRouterLocal erl = new EventRouterLocal();
+        erl.register(se);
+    }
+
+    @Test(expected = UnSupportParameterException.class)
     public void exceptionParcelableArrayTest() throws Exception {
         SubscriberExp se = new SubscriberExp();
         EventRouterLocal erl = new EventRouterLocal();
@@ -569,17 +870,4 @@ public class EventRouterLocalTest {
     @Test
     public void registerConcurrentTest() {
     }
-
-
-    // 测试的注册类和Event
-    // ------------------------------ 测试的注册类 -----------------------------------------
-
-
-    // ------------------------------ 测试的注册类 -----------------------------------------
-
-    // ------------------------------ 事件 ------------------------------------------------
-
-
-    // ------------------------------ 事件 ------------------------------------------------
-
 }

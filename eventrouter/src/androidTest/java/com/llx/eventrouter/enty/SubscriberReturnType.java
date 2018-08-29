@@ -6,7 +6,10 @@ import com.llx.eventrouter.Subscriber;
 import com.llx.eventrouter.Type;
 import com.llx.eventrouter.execute.ThreadModel;
 
+import org.junit.Test;
+
 import java.lang.annotation.Retention;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SubscriberReturnType {
@@ -36,6 +39,18 @@ public class SubscriberReturnType {
     public boolean[] boo;
     public String[] ss;
     public Event1 event;
+    public ArrayList<Event1> event1s;
+
+    public ArrayList<Integer> integers;
+    public ArrayList<Long> longs;
+    public ArrayList<Character> characters;
+    public ArrayList<Byte> bytes;
+    public ArrayList<Float> floats;
+    public ArrayList<Double> doubles;
+    public ArrayList<Boolean> booleans;
+
+    public SubscriberReturnType() {
+    }
 
     @Subscriber(tag = "Subscriber1_registerMethod1_void")
     public void registerMethod1() {
@@ -169,5 +184,55 @@ public class SubscriberReturnType {
         Log.e(TAG, "Subscriber1_registerMethod13_parcelable = " + event.toString());
         this.event = event;
         return event;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_parcelableArrayList",threadModel = ThreadModel.POST,type = Type.BLOCK)
+    public ArrayList<Event1> registerMethod29(ArrayList<Event1> event1s) {
+        Log.d(TAG,"Subscriber1_registerMethod13_parcelableArrayList = " + event1s.toString());
+        this.event1s = event1s;
+        return event1s;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_integerArrayList",threadModel = ThreadModel.HANDLER,type = Type.BLOCK)
+    public ArrayList<Integer> registerMethod30(ArrayList<Integer> integers) {
+        Log.d(TAG,"Subscriber1_registerMethod13_integerArrayList = " + integers.toString());
+        this.integers = integers;
+        return integers;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_longArrayList",threadModel = ThreadModel.MAIN,type = Type.BLOCK)
+    public ArrayList<Long> registerMethod31(ArrayList<Long> longs) {
+        this.longs = longs;
+        return longs;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_characterArrayList",threadModel = ThreadModel.HANDLER,type = Type.BLOCK)
+    public ArrayList<Character> registerMethod32(ArrayList<Character> characters) {
+        this.characters = characters;
+        return characters;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_bytesArrayList",threadModel = ThreadModel.POOL,type = Type.BLOCK)
+    public ArrayList<Byte> registerMethod33(ArrayList<Byte> bytes) {
+        this.bytes = bytes;
+        return bytes;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_floatArrayList",threadModel = ThreadModel.HANDLER,type = Type.BLOCK)
+    public ArrayList<Float> registerMethod34(ArrayList<Float> floats) {
+        this.floats = floats;
+        return floats;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_doubleArrayList",threadModel = ThreadModel.POST,type = Type.BLOCK)
+    public ArrayList<Double> registerMethod35(ArrayList<Double> doubles) {
+        this.doubles = doubles;
+        return doubles;
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod13_booleanArrayList",threadModel = ThreadModel.POST,type = Type.BLOCK)
+    public ArrayList<Boolean> registerBoolean(ArrayList<Boolean> booleans) {
+        this.booleans = booleans;
+        return booleans;
     }
 }

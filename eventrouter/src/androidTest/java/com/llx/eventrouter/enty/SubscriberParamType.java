@@ -6,6 +6,7 @@ import com.llx.eventrouter.Event;
 import com.llx.eventrouter.Subscriber;
 import com.llx.eventrouter.execute.ThreadModel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SubscriberParamType {
@@ -34,8 +35,17 @@ public class SubscriberParamType {
     public byte[] bs;
     public float[] fs;
     public double[] ds;
+    public boolean[] boos;
     public String[] strs;
     public Event1 event;
+    public ArrayList<Event1> event1s;
+    public ArrayList<Integer> integers;
+    public ArrayList<Long> longs;
+    public ArrayList<Character> characters;
+    public ArrayList<Byte> bytes;
+    public ArrayList<Float> floats;
+    public ArrayList<Double> doubles;
+    public ArrayList<Boolean> booleans;
 
     public ValueWrapper mValueWrapper;
 
@@ -214,6 +224,13 @@ public class SubscriberParamType {
         mValueWrapper.setDs(ds);
     }
 
+    @Subscriber(tag = "Subscriber1_registerMethod30_boolean[]",threadModel = ThreadModel.POST)
+    public void registerMethod30(boolean[] bs) {
+        Log.d(TAG,"Subscriber1_registerMethod30_boolean[]");
+        this.boos = bs;
+        mValueWrapper.setBos(bs);
+    }
+
     @Subscriber(tag = "Subscriber1_registerMethod24_String[]",threadModel = ThreadModel.POST)
     public void registerMethod25(String[] ss) {
         Log.d(TAG,"Subscriber1_registerMethod24_String[] = " + Arrays.toString(ss));
@@ -221,12 +238,66 @@ public class SubscriberParamType {
         mValueWrapper.setStrs(ss);
     }
 
-    // ---- Byte[] can't support
-
     @Subscriber(tag = "Subscriber1_registerMethod13_parcelable", threadModel = ThreadModel.POST)
     public void registerMethod13(Event1 event) {
         Log.e(TAG, "Subscriber1_registerMethod13_parcelable = " + event.toString());
         this.event = event;
         mValueWrapper.setEvent(event);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_parcelableArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod29(ArrayList<Event1> event1s) {
+        Log.d(TAG,"Subscriber1_registerMethod29_parcelableArrayList = " + event1s.toString());
+        this.event1s = event1s;
+        mValueWrapper.setEvent1s(event1s);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_integerArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod31(ArrayList<Integer> integers) {
+        Log.d(TAG,"Subscriber1_registerMethod29_integerArrayList = " + integers.toString() );
+        this.integers = integers;
+        mValueWrapper.setIntegers(integers);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_longArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod32(ArrayList<Long> longs) {
+        Log.d(TAG,"Subscriber1_registerMethod29_longArrayList = " + longs.toString());
+        this.longs = longs;
+        mValueWrapper.setLongs(longs);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_charactersArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod33(ArrayList<Character> characters) {
+        Log.d(TAG,"Subscriber1_registerMethod29_charactersArrayList = " + characters.toString());
+        this.characters = characters;
+        mValueWrapper.setCharacters(characters);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_bytesArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod34(ArrayList<Byte> bytes) {
+        Log.d(TAG,"Subscriber1_registerMethod29_bytesArrayList = " + bytes.toString());
+        this.bytes = bytes;
+        mValueWrapper.setBytes(bytes);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_floatsArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod35(ArrayList<Float> floats) {
+        Log.d(TAG,"Subscriber1_registerMethod29_floatArrayList = " + floats.toString());
+        this.floats = floats;
+        mValueWrapper.setFloats(floats);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_doubleArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod36(ArrayList<Double> doubles) {
+        Log.d(TAG,"Subscriber1_registerMethod29_doubleArrayList = " + doubles.toString());
+        this.doubles = doubles;
+        mValueWrapper.setDoubles(doubles);
+    }
+
+    @Subscriber(tag = "Subscriber1_registerMethod29_booleanArrayList",threadModel = ThreadModel.POST)
+    public void registerMethod37(ArrayList<Boolean> booleans) {
+        Log.d(TAG,"Subscriber1_registerMethod29_booleanArrayList = " + booleans.toString());
+        this.booleans = booleans;
+        mValueWrapper.setBooleans(booleans);
     }
 }

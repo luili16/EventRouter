@@ -11,9 +11,9 @@ import com.llx.eventrouter.enty.SubscriberParamType;
 import com.llx.eventrouter.enty.SubscriberReturnType;
 import com.llx.eventrouter.enty.ValueWrapper;
 
-public class RemoteService extends Service {
+public class RemoteService2 extends Service {
 
-    private static final String TAG = "RemoteService";
+    private static final String TAG = "RemoteService2";
 
     private ValueWrapper mValueWrapper = new ValueWrapper();
     private SubscriberParamType sbt = new SubscriberParamType(mValueWrapper);
