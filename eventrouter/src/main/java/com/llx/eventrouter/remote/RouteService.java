@@ -19,7 +19,6 @@ import static com.llx.eventrouter.Const.TAG;
 
 /**
  * 此服务用来中转进程与进程间的数据交互
- *
  * 注意，此服务只能运行在一个独立的进程中，也就是说在AndroidManifest.xml中这个Service要声明为一个
  * 独立的进程，如果不这样，则会导致其他的进程无法向此进程发送发送消息，从而导致莫名奇妙的bug。
  */
