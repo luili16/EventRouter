@@ -27,13 +27,23 @@ public class RemoteService2 extends Service {
 
         @Override
         public void setCmd(String cmd) throws RemoteException {
-
+            switch (cmd) {
+                case CMD.REMOTE_SEND:
+                    try {
+                        Log.d("main","post hello world!!! finish");
+                        EventRouter.get().post("hello_world","remote_send");
+                    } catch (TimeoutException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+            }
         }
     };
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d("main","onCrate ---------------------------");
         EventRouter.init(this,getPackageName());
         try {
             EventRouter.get().register(sbt);
@@ -41,6 +51,13 @@ public class RemoteService2 extends Service {
         } catch (UnSupportParameterException e) {
             Log.e(TAG,"",e);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventRouter.get().unRegister(sbt);
+        EventRouter.get().unRegister(srt);
     }
 
     @Nullable

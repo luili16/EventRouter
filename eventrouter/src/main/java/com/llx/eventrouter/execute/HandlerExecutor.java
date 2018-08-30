@@ -43,6 +43,11 @@ public class HandlerExecutor implements Executor {
     }
 
     @Override
+    public void execute(Runnable r) {
+        mHandler.post(r);
+    }
+
+    @Override
     public Object submit(Method method, Object paramObj, Object obj) throws Exception {
         CountDownLatch doneSignal = new CountDownLatch(1);
         SyncRunner runner = new SyncRunner(doneSignal,method,paramObj,obj);

@@ -17,6 +17,11 @@ public class PostExecutor implements Executor {
     }
 
     @Override
+    public void execute(Runnable r) {
+        r.run();
+    }
+
+    @Override
     public Object submit(Method method, Object paramObj, Object obj) throws Exception {
         if (paramObj == null) {
             return method.invoke(obj);

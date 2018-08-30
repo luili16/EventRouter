@@ -38,6 +38,11 @@ public class MainExecutor implements Executor {
     }
 
     @Override
+    public void execute(Runnable r) {
+        mHandler.post(r);
+    }
+
+    @Override
     public Object submit(final Method method, final Object paramObj, final Object obj) {
         FutureTask<Object> task = new FutureTask<>(new Callable<Object>() {
             @Override

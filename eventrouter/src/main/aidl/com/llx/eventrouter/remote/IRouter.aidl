@@ -8,7 +8,7 @@ import com.llx.eventrouter.remote.IReceiver;
 interface IRouter {
     //向其他进程发送消息 throws UnExceptedAddressException
     // 当指定的address还没有被添加
-    void send(String toAddress, in Bundle msg);
+    void send(String fromAddress,in List<String> toAddress, in Bundle msg);
 
     //添加一个用来接收消息的回调接口
     void addReceiver(in IReceiver receiver);

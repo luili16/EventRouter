@@ -6,7 +6,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -16,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.llx.eventrouter.Const.TAG;
+
 /**
  * 此服务用来中转进程与进程间的数据交互
  *
@@ -23,56 +24,39 @@ import java.util.concurrent.ConcurrentHashMap;
  * 独立的进程，如果不这样，则会导致其他的进程无法向此进程发送发送消息，从而导致莫名奇妙的bug。
  */
 public class RouteService extends Service {
-    private static final String TAG = "RouteService";
 
     private class RouterImpl extends IRouter.Stub {
 
         private Map<Address,IReceiver> mReceiverMap = new ConcurrentHashMap<>();
 
         @Override
-        public void send(String toAddressStr, Bundle msg) throws RemoteException {
-            Address fromAddress = Address.toAddress(Binder.getCallingPid());
-            Address toAddress = Address.toAddress(toAddressStr);
-            if (toAddress == null) {
+        public void send(String fromAddress,List<String> toAddressStr, final Bundle msg) throws RemoteException {
+
+            if (toAddressStr == null) {
                 return;
             }
 
-            boolean isBroadcast = Address.isBroadcast(toAddress);
-            if (isBroadcast) {
-                Set<Address> keySet = mReceiverMap.keySet();
-                for (Address connAddress : keySet) {
-                    // 不会包括主动发起广播的那个进程
-                    if (connAddress.equals(fromAddress)) {
-                        continue;
-                    }
-                    IReceiver receiver = mReceiverMap.get(connAddress);
+            for (String a : toAddressStr) {
 
-                    if (receiver != null && receiver.asBinder().pingBinder()) {
-                        receiver.onMessageReceive(fromAddress.toString(),msg);
-                    }
+                final Address toAddress = Address.toAddress(a);
+
+                if (toAddress == null) {
+                    throw new RemoteException("unknown address : " + a);
                 }
 
-                return;
-            }
+                IReceiver receiver = mReceiverMap.get(toAddress);
 
-            IReceiver receiver = mReceiverMap.get(toAddress);
-
-            if (receiver == null || !receiver.asBinder().pingBinder()) {
-                Log.e(TAG,String.format("address(%s) lost connect send failed",toAddress.toString()));
-                return;
+                if (receiver == null || !receiver.asBinder().pingBinder()) {
+                    Log.e(TAG,String.format("address(%s) lost connect send failed",toAddress.toString()));
+                    return;
+                }
+                receiver.onMessageReceive(fromAddress,msg);
             }
-            receiver.onMessageReceive(fromAddress.toString(),msg);
         }
 
         @Override
         public void addReceiver(IReceiver receiver) throws RemoteException {
             Address fromAddress = Address.toAddress(Binder.getCallingPid());
-            Address localAddress = Address.toAddress();
-            if (fromAddress.equals(localAddress)) {
-                Log.e(TAG, "add Receiver in same process!");
-                return;
-            }
-
             mReceiverMap.put(fromAddress,receiver);
         }
 
@@ -85,7 +69,6 @@ public class RouteService extends Service {
         @Override
         public List<String> getAliveClient() throws RemoteException {
 
-            Address fromAddress = Address.toAddress(Binder.getCallingPid());
             List<String> addressList = new ArrayList<>();
             Set<Map.Entry<Address, IReceiver>> entries = mReceiverMap.entrySet();
 
@@ -99,10 +82,7 @@ public class RouteService extends Service {
                     Log.e(TAG, String.format("RouterService :  connect lost remote address(%s)",address.toString()));
                     iterator.remove();
                 }
-
-                if (!address.equals(fromAddress)) {
-                    addressList.add(address.toString());
-                }
+                addressList.add(address.toString());
             }
 
             return addressList;
@@ -111,7 +91,6 @@ public class RouteService extends Service {
 
     private RouterImpl mRouterImpl = new RouterImpl();
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return mRouterImpl;

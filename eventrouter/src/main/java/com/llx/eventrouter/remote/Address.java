@@ -63,14 +63,6 @@ public class Address {
         return null;
     }
 
-    public static Address toBroadcast() {
-        return new Address(sBroadAddress);
-    }
-
-    public static boolean isBroadcast(Address address) {
-        return address.mPid == sBroadAddress;
-    }
-
     @Override
     public String toString() {
         return "pid:"+mPid;

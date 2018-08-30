@@ -2,6 +2,6 @@
     package="com.llx.eventrouter.test" >
     <application
         >
-        <service android:name="com.llx.eventrouter.remote.RouteService" android:exported="true" android:process=":routeService"/>
+        <service android:name="com.llx.eventrouter.remote.RouteService" android:exported="true"/>
     </application>
 </manifest>

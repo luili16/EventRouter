@@ -13,9 +13,10 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.llx.eventrouter.Const.TAG;
+
 public class Transport implements IRouter {
 
-    private static final String TAG = "Transport";
     private IRouter mRouter;
     private IReceiver mOutReceiver;
     private RouterConn mConn;
@@ -45,9 +46,9 @@ public class Transport implements IRouter {
     }
 
     @Override
-    public void send(String address, Bundle msg) throws RemoteException {
+    public void send(String fromAddress,List<String> address, Bundle msg) throws RemoteException {
         if (mRouter != null) {
-            mRouter.send(address, msg);
+            mRouter.send(fromAddress,address, msg);
         }
     }
 
@@ -96,7 +97,6 @@ public class Transport implements IRouter {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mRouter = IRouter.Stub.asInterface(service);
-            Log.d(TAG,"Router Service connected");
             if (mRouter != null) {
                 try {
                     mRouter.addReceiver(new ReceiverImpl());

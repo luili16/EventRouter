@@ -1,6 +1,5 @@
 package com.llx.eventrouter;
 
-import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 

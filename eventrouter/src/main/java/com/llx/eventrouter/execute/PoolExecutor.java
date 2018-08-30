@@ -37,6 +37,11 @@ public class PoolExecutor implements Executor {
     }
 
     @Override
+    public void execute(Runnable r) {
+        mExecutor.execute(r);
+    }
+
+    @Override
     public Object submit(final Method method, final Object paramObj, final Object obj) throws Exception {
 
         Future<Object> submit = mExecutor.submit(new Callable<Object>() {

@@ -18,6 +18,7 @@ import java.lang.annotation.Target;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -240,6 +241,7 @@ public class EventRouter {
             if (aliveClients.isEmpty()) {
                 return toAddressList;
             }
+
             CountDownLatch signal = new CountDownLatch(aliveClients.size());
             String id = UUID.randomUUID().toString();
             mSubsEventsSnapshot.put(id, new EventListHolder(signal));
@@ -249,8 +251,7 @@ public class EventRouter {
             msg.putString(KEY_ID, id);
             msg.putString(KEY_TYPE, TYPE_VALUE_OF_QUERY);
 
-            Address broadcast = Address.toBroadcast();
-            mTransport.send(broadcast.toString(), msg);
+            mTransport.send(Address.toAddress().toString(),aliveClients, msg);
 
             // 等待查询结束
             if (!signal.await(timeout, TimeUnit.MILLISECONDS)) {
@@ -264,11 +265,11 @@ public class EventRouter {
                 paramType = objParam.getClass().getCanonicalName();
             }
             Event event = new Event(paramType, tag, returnCls.getCanonicalName());
-
             EventListHolder holder = mSubsEventsSnapshot.remove(id);
             if (holder == null) {
                 return toAddressList;
             }
+
             for (Map.Entry<String, ArrayList<Event>> entry : holder.mEventMap.entrySet()) {
                 String address = entry.getKey();
                 ArrayList<Event> events = entry.getValue();
@@ -278,6 +279,7 @@ public class EventRouter {
                     }
                 }
             }
+
         } catch (RemoteException | InterruptedException e) {
             Log.e(TAG, "unexpected error", e);
         }
@@ -358,7 +360,7 @@ public class EventRouter {
             if (returnType.equals(Void.class.getCanonicalName())) {
                 // 返回值为空，直接返回
                 try {
-                    mTransport.send(mAddress, msg);
+                    mTransport.send(Address.toAddress().toString(),Collections.singletonList(mAddress), msg);
                 } catch (RemoteException e) {
                     Log.e(TAG, "send msg to " + mAddress + " failed", e);
                 }
@@ -366,7 +368,7 @@ public class EventRouter {
                 // 其他类型需要缓存执行的过程，等待执行结果的返回
                 mWaiter.put(mId, this);
                 try {
-                    mTransport.send(mAddress, msg);
+                    mTransport.send(Address.toAddress().toString(),Collections.singletonList(mAddress), msg);
                     if (!mSignal.await(timeout, TimeUnit.MILLISECONDS)) {
                         throw new TimeoutException("wait result from remote process timeout");
                     }
@@ -412,7 +414,8 @@ public class EventRouter {
                 valueMsg.putString(KEY_TYPE, TYPE_VALUE_OF_QUERY_RESULT);
                 valueMsg.putParcelableArrayList(KEY_QUERY_LIST, events);
                 try {
-                    mTransport.send(fromAddress, valueMsg);
+
+                    mTransport.send(Address.toAddress().toString(),Collections.singletonList(fromAddress), valueMsg);
                 } catch (RemoteException e) {
                     Log.e(TAG, String.format("send query event list to %s failed!", fromAddress), e);
                 }
@@ -436,6 +439,7 @@ public class EventRouter {
                 if (events == null) {
                     events = new ArrayList<>();
                 }
+
                 String id = message.getString(KEY_ID);
                 EventListHolder holder = mSubsEventsSnapshot.get(id);
                 if (holder != null) {
@@ -476,7 +480,7 @@ public class EventRouter {
                     }
                     msg.putString(KEY_ID, id);
                     try {
-                        mTransport.send(fromAddress, msg);
+                        mTransport.send(Address.toAddress().toString(),Collections.singletonList(fromAddress), msg);
                     } catch (RemoteException e) {
                         Log.e(TAG, "send msg to " + fromAddress + " failed", e);
                     }
